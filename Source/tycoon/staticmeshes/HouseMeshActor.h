@@ -31,7 +31,6 @@ public:
 	UWidgetComponent* notCompleteResourceWidget;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TArray<ANPCCharacter*> npcs;
-	virtual void Tick(float DeltaSeconds) override;
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 	void KillMe();
 	int32 GetResource();
@@ -61,9 +60,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 private:
-	float tick = 0.0;
 	float BuildingTime = 0.0;
 	int32 resource = 0;
 	void SpawnNpc();
+	void UpdateResources();
 	bool bNotCompleted = true;
+	FTimerHandle UpdateResourcesTimerHandle;
 };

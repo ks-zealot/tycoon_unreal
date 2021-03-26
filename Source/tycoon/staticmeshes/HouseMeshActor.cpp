@@ -4,7 +4,6 @@
 #include "HouseMeshActor.h"
 
 
-#include "NavigationSystem.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "tycoon/ui/HouseBuildingWidget.h"
@@ -13,7 +12,7 @@
 
 AHouseMeshActor::AHouseMeshActor()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("springArm"));
 	resourceWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ResourceWidget"));
 	notCompleteResourceWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("BuildingWidget"));
@@ -21,7 +20,6 @@ AHouseMeshActor::AHouseMeshActor()
 	springArm->SetupAttachment(RootComponent);
 	resourceWidget->SetupAttachment(springArm);
 	notCompleteResourceWidget->SetupAttachment(springArm);
-	 
 }
 
 void AHouseMeshActor::BeginPlay()
@@ -30,59 +28,55 @@ void AHouseMeshActor::BeginPlay()
 	resourceWidget->SetVisibility(false);
 	GetStaticMeshComponent()->SetStaticMesh(NotCompleteHouse);
 	UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(resourceWidget->GetUserWidgetObject());
-    widgetPtr->set(0, static_cast<float>(KillResourcesValue));
+	widgetPtr->set(0, static_cast<float>(KillResourcesValue));
+	GetWorld()->GetTimerManager().SetTimer(UpdateResourcesTimerHandle, this, &AHouseMeshActor::UpdateResources, 1.0, true);
 }
 
-void AHouseMeshActor::Tick(float DeltaTime)
+
+
+void AHouseMeshActor::UpdateResources()
 {
-	Super::Tick(DeltaTime);
-
-	if (resource >= KillResourcesValue)
+	if (bNotCompleted)
 	{
-		return;
-	}
-	tick += DeltaTime;
-	if (tick >= 1.0)
-	{
-		tick = 0.0;
-		if (bNotCompleted)
+		BuildingTime += 1.0;
+		UHouseBuildingWidget* widgetPtr = Cast<UHouseBuildingWidget>(
+            notCompleteResourceWidget->GetUserWidgetObject());
+		widgetPtr->set(BuildingTime * 20);
+		if (BuildingTime == 5.0)
 		{
-			BuildingTime += 1.0;
-			UHouseBuildingWidget* widgetPtr = Cast<UHouseBuildingWidget>(notCompleteResourceWidget->GetUserWidgetObject());
-			widgetPtr->set(BuildingTime * 20   );
-			if (BuildingTime == 5.0)
-			{
-				bNotCompleted = false;
-				notCompleteResourceWidget->SetVisibility(false);
-				resourceWidget->SetVisibility(true);
-				GetStaticMeshComponent()->SetStaticMesh(CompleteHouse);
-			}
-		} else
-		{
-			resource += IncomePerSecond;
-			if (resource % SpawnNpcResourcesValue == 0)
-			{
-				SpawnNpc();
-			}
-			UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(resourceWidget->GetUserWidgetObject());
-			widgetPtr->set(resource, static_cast<float>(KillResourcesValue));
-			if (resource == KillResourcesValue)
-			{
-				killDelegate.ExecuteIfBound(myIndex);
-				KillMe();
-			}
+			bNotCompleted = false;
+			notCompleteResourceWidget->SetVisibility(false);
+			resourceWidget->SetVisibility(true);
+			GetStaticMeshComponent()->SetStaticMesh(CompleteHouse);
 		}
-		
-		
+	}
+	else
+	{
+		resource += IncomePerSecond;
+		if (resource % SpawnNpcResourcesValue == 0)
+		{
+			SpawnNpc();
+		}
+		UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(resourceWidget->GetUserWidgetObject());
+		widgetPtr->set(resource, static_cast<float>(KillResourcesValue));
+		if (resource == KillResourcesValue)
+		{
+			killDelegate.ExecuteIfBound(myIndex);
+			KillMe();
+		}
 	}
 }
-
 
 void AHouseMeshActor::SpawnNpc()
 {
 	FVector location = GetActorLocation();
-	FVector2D random = UUtilLib::GetRandomPointTwoCircles(UKismetMathLibrary::Conv_VectorToVector2D(location), SpawnNpcMinRadius, SpawnNpcMaxRadius);
-	ANPCCharacter* npc = GetWorld()->SpawnActor<ANPCCharacter>(NPCBlueprint, FVector(random, 30), FRotator::ZeroRotator);
+	FVector2D random = UUtilLib::GetRandomPointTwoCircles(UKismetMathLibrary::Conv_VectorToVector2D(location),
+	                                                      SpawnNpcMinRadius, SpawnNpcMaxRadius);
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+	ANPCCharacter* npc = GetWorld()->SpawnActor<ANPCCharacter>(NPCBlueprint, FVector(random, 30),
+	                                                           FRotator::ZeroRotator, SpawnParameters);
 	if (npc)
 	{
 		npc->GetMesh()->SetCollisionProfileName(FName("CharacterMesh"), false);
@@ -91,7 +85,6 @@ void AHouseMeshActor::SpawnNpc()
 	}
 }
 
- 
 
 int32 AHouseMeshActor::GetResource()
 {

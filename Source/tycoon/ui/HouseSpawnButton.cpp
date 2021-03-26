@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "tycoon/tycoonGameModeBase.h"
+#include "tycoon/levellogic/MainLevelLogic.h"
 
 UHouseSpawnButton::UHouseSpawnButton()
 {
@@ -17,5 +18,5 @@ void UHouseSpawnButton::SpawnHouse()
 	GetOwningPlayer()->SetMouseCursorWidget(EMouseCursor::Default, CreateWidget<UUserWidget>(this->GetParent(),
 		                                        CursorBlueprint));
 	AtycoonGameModeBase* tycoonMode = Cast< AtycoonGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	tycoonMode->bAboutToSpawnHouse = true;
+	Cast<AMainLevelLogic>(GetWorld()->GetLevelScriptActor())->bAboutToSpawnHouse = true;
 }
