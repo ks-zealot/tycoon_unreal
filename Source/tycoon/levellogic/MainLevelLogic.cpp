@@ -92,8 +92,8 @@ void AMainLevelLogic::SpawnHouse()
 					for (AHouseMeshActor* house : houses)
 					{
 						int32 res = house->GetResource();
-						house->SetResource(FMath::Clamp(res, 0, res - localHousePrice));
-						localHousePrice = FMath::Clamp(localHousePrice, 0, localHousePrice - res);
+						house->SetResource(FMath::Clamp<int32>( res - localHousePrice, 0, res - localHousePrice));
+						localHousePrice = FMath::Clamp<int32>(localHousePrice - res, 0, localHousePrice - res);
 						if (localHousePrice == 0)
 						{
 							break;
@@ -105,10 +105,9 @@ void AMainLevelLogic::SpawnHouse()
 					//надо занулить Z ось иначе домик повиснет в воздухе.
 					FVector HouseLocation = FVector(location.X, location.Y, 0.0);
 					FRotator Rotator = FRotator(0.0, 270.0, 0.0);
-					// если передавать в функцию транформ вместо локации и ротатора, то моделька меняется. Да, я тоже не знаю.
-					FTransform transform = UKismetMathLibrary::MakeTransform(HouseLocation, Rotator, FVector());
+					FTransform transform = UKismetMathLibrary::MakeTransform(HouseLocation, Rotator, FVector::OneVector);
 					AHouseMeshActor* house = world->SpawnActor<AHouseMeshActor>(
-						MyHouseBlueprint, HouseLocation, Rotator);
+						MyHouseBlueprint, transform);
 					int32 idx = houses.Add(house);
 					house->myIndex = idx;
 					house->killDelegate.BindUObject(this, &AMainLevelLogic::RemoveMe);

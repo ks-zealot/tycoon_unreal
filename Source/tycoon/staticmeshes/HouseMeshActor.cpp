@@ -72,11 +72,11 @@ void AHouseMeshActor::SpawnNpc()
 	FVector location = GetActorLocation();
 	FVector2D random = UUtilLib::GetRandomPointTwoCircles(UKismetMathLibrary::Conv_VectorToVector2D(location),
 	                                                      SpawnNpcMinRadius, SpawnNpcMaxRadius);
+	FTransform transform = UKismetMathLibrary::MakeTransform(FVector(random, 30), FRotator::ZeroRotator, FVector::OneVector);
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride =
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-	ANPCCharacter* npc = GetWorld()->SpawnActor<ANPCCharacter>(NPCBlueprint, FVector(random, 30),
-	                                                           FRotator::ZeroRotator, SpawnParameters);
+	ANPCCharacter* npc = GetWorld()->SpawnActor<ANPCCharacter>(NPCBlueprint, transform, SpawnParameters);
 	if (npc)
 	{
 		npc->GetMesh()->SetCollisionProfileName(FName("CharacterMesh"), false);
