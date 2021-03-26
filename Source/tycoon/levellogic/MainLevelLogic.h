@@ -45,7 +45,7 @@ private:
 	bool checkFail();
 	bool theEnd = false;
 	UFUNCTION()
-	void RemoveMe(int32 idx);
+	void RemoveMe(AHouseMeshActor* house);
 	FTimerHandle RockTimerHandle;
 	ULoadingScreenUI* loadingWidget;
 public:

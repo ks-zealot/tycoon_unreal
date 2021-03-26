@@ -61,7 +61,7 @@ void AHouseMeshActor::UpdateResources()
 		widgetPtr->set(resource, static_cast<float>(KillResourcesValue));
 		if (resource == KillResourcesValue)
 		{
-			killDelegate.ExecuteIfBound(myIndex);
+			killDelegate.ExecuteIfBound(this);
 			KillMe();
 		}
 	}

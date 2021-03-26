@@ -16,7 +16,7 @@
 /**
  * 
  */
-DECLARE_DELEGATE_OneParam(FKillDelegate, int32 );
+DECLARE_DELEGATE_OneParam(FKillDelegate, AHouseMeshActor* );
 UCLASS()
 class TYCOON_API AHouseMeshActor : public AStaticMeshActor
 {

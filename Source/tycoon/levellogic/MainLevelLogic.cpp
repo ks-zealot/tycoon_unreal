@@ -113,7 +113,7 @@ void AMainLevelLogic::SpawnHouse()
 					house->myIndex = idx;
 					house->killDelegate.BindUObject(this, &AMainLevelLogic::RemoveMe);
 					housePrice = houses.Num() / 10 * 100 + 100;
-					UE_LOG(LogTemp, Log, TEXT("house Location %f %f"), HouseLocation.X, HouseLocation.Y);
+					UE_LOG(LogTemp, Log, TEXT("house Location %f %f %d"), HouseLocation.X, HouseLocation.Y, idx);
 					bAboutToSpawnHouse = false;
 					RecreateUI();
 				}
@@ -201,9 +201,8 @@ bool AMainLevelLogic::checkFail()
 	return false;
 }
 
-void AMainLevelLogic::RemoveMe(int32 idx)
+void AMainLevelLogic::RemoveMe(AHouseMeshActor* house)
 {
-	AHouseMeshActor* house = houses[idx];
 	house->killDelegate.Unbind();
-	houses.RemoveAt(idx);
+	houses.Remove(house);
 }
