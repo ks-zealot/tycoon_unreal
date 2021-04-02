@@ -4,7 +4,6 @@
 #include "MainLevelLogic.h"
 
 
-
 AMainLevelLogic::AMainLevelLogic()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -15,107 +14,99 @@ void AMainLevelLogic::BeginPlay()
 	Super::BeginPlay();
 	UWorld* world = GetWorld();
 	APlayerController* player = world->GetFirstPlayerController();
-	loadingWidget = CreateWidget<ULoadingScreenUI>(player, LoadingScreenWidget);
-	loadingWidget->AddToViewport();
+	LoadingWidget = CreateWidget<ULoadingScreenUI>(player, LoadingScreenWidget);
+	LoadingWidget->AddToViewport();
 
-	
-	if (!IsValid(world))
-	{
-		UE_LOG(LogTemp, Log, TEXT("no world"));
-	}
 
-	world->GetTimerManager().SetTimer(RockTimerHandle, this, &AMainLevelLogic::generateRocks, 1.0, false);
-	createUI(player);
+	world->GetTimerManager().SetTimer(RockTimerHandle, this, &AMainLevelLogic::GenerateRocks, 1.0, false);
+	CreateUI(player);
 	player->bShowMouseCursor = true;
 	player->InputComponent->BindKey(EKeys::Q, IE_Released, this, &AMainLevelLogic::RecreateUI);
 	player->InputComponent->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AMainLevelLogic::SpawnHouse);
-	updateAvailableResource();
+	UpdateAvailableResources();
 }
 
 
-void AMainLevelLogic::generateRocks()
+void AMainLevelLogic::GenerateRocks()
 {
 	for (int32 i = 0; i <= NumberOfRocks; i++)
 	{
-		loadingWidget->progress->SetPercent(i / float(NumberOfRocks));
+		LoadingWidget->ProgressBar->SetPercent(i / float(NumberOfRocks));
 		FVector2D random = UUtilLib::GetRandomPointCircleWithMinMax(MinRockGenRadius, MaxRockGenRadius);
 		GetWorld()->SpawnActor<AStaticMeshActor>(RockBluerint, FVector(random, 0), FRotator::ZeroRotator);
 	}
-	loadingWidget->RemoveFromParent();
+	LoadingWidget->RemoveFromParent();
 }
 
 /*
-*Восстанавливаю дефолтный курсор.
-Более вменяемого способа это сделать я не нашел
+*TODO find more clear way to reset default cursor
 */
 void AMainLevelLogic::RecreateUI()
 {
 	UWorld* world = GetWorld();
 	UWidgetLayoutLibrary::RemoveAllWidgets(world);
-	createUI(world->GetFirstPlayerController());
+	CreateUI(world->GetFirstPlayerController());
 }
 
-void AMainLevelLogic::createUI(APlayerController* player)
+void AMainLevelLogic::CreateUI(APlayerController* player)
 {
 	ui = CreateWidget<UMainUI>(player, MainUI);
 	ui->AddToViewport();
+	ui->SetHousePrice(HousePrice);
+}
+
+void AMainLevelLogic::NotifyAboutSpawnHouse()
+{
+	UWorld* World = GetWorld();
+	APlayerController* player = World->GetFirstPlayerController();
+	player->SetMouseCursorWidget(EMouseCursor::Default, CreateWidget<UUserWidget>(ui,
+		                             CursorBlueprint));
+	bAboutToSpawnHouse = true;
 }
 
 void AMainLevelLogic::SpawnHouse()
 {
 	if (bAboutToSpawnHouse)
 	{
-		UWorld* world = GetWorld();
-		APlayerController* player = world->GetFirstPlayerController();
+		UWorld* World = GetWorld();
+		APlayerController* Player = World->GetFirstPlayerController();
 		FHitResult HitResult;
-		bool bRes = player->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), false,
+		bool bRes = Player->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), false,
 		                                                     HitResult);
 		if (bRes)
 		{
 			if (bCanBuild)
 			{
-				int32 availableResource = 0;
-				for (int i = 0; i < houses.Num(); i++)
+				int32 LocalHousePrice = HousePrice;
+				Calculate(StartCredit, LocalHousePrice);
+				for (AHouseMeshActor* House : Houses)
 				{
-					availableResource += houses[i]->GetResource();
-				}
-				if (availableResource < housePrice)
-				{
-					UE_LOG(LogTemp, Log, TEXT("need more gold!"));
-					bAboutToSpawnHouse = false;
-					RecreateUI();
-				}
-				else
-				{
-					int32 localHousePrice = housePrice;
-
-					for (AHouseMeshActor* house : houses)
+					int32 Res = House->GetResource();
+					Calculate(Res, LocalHousePrice);
+					House->SetResource(Res);
+					if (LocalHousePrice == 0)
 					{
-						int32 res = house->GetResource();
-						house->SetResource(FMath::Clamp<int32>( res - localHousePrice, 0, res - localHousePrice));
-						localHousePrice = FMath::Clamp<int32>(localHousePrice - res, 0, localHousePrice - res);
-						if (localHousePrice == 0)
-						{
-							break;
-						}
+						break;
 					}
-
-
-					FVector location = HitResult.Location;
-					//надо занулить Z ось иначе домик повиснет в воздухе.
-					FVector HouseLocation = FVector(location.X, location.Y, 0.0);
-					FRotator Rotator = FRotator(0.0, 270.0, 0.0);
-					FTransform transform = UKismetMathLibrary::MakeTransform(HouseLocation, Rotator, FVector::OneVector);
-					AHouseMeshActor* house = world->SpawnActor<AHouseMeshActor>(
-						MyHouseBlueprint, transform);
-					int32 idx = houses.Add(house);
-					house->myIndex = idx;
-					house->killDelegate.BindUObject(this, &AMainLevelLogic::RemoveMe);
-					housePrice = houses.Num() / 10 * 100 + 100;
-					UE_LOG(LogTemp, Log, TEXT("house Location %f %f %d"), HouseLocation.X, HouseLocation.Y, idx);
-					bAboutToSpawnHouse = false;
-					RecreateUI();
 				}
+
+
+				FVector Location = HitResult.Location;
+				//set Z axias  to 0, or house will be fly
+				FVector HouseLocation = FVector(Location.X, Location.Y, 0.0);
+				FRotator Rotator = FRotator(0.0, 270.0, 0.0);
+				FTransform Transform =
+					UKismetMathLibrary::MakeTransform(HouseLocation, Rotator, FVector::OneVector);
+				AHouseMeshActor* HouseMeshActor = World->SpawnActor<AHouseMeshActor>(
+					MyHouseBlueprint, Transform);
+				int32 Idx = Houses.Add(HouseMeshActor);
+				HouseMeshActor->MyIndex = Idx;
+				HouseMeshActor->killDelegate.BindUObject(this, &AMainLevelLogic::RemoveMe);
+				HousePrice = Houses.Num() / 10 * 100 + 100;
+				ui->SetHousePrice(HousePrice);
+				UE_LOG(LogTemp, Log, TEXT("house Location %f %f %d"), HouseLocation.X, HouseLocation.Y, Idx);
+				bAboutToSpawnHouse = false;
+				RecreateUI();
 			}
 			else
 			{
@@ -126,14 +117,22 @@ void AMainLevelLogic::SpawnHouse()
 	}
 }
 
+
+void AMainLevelLogic::Calculate(int32& Res, int32& Price)
+{
+	int32 NewResources = Res - Price;
+	int32 NewLocalPriceHouse = Price - Res;
+	Res = FMath::Clamp<int32>(NewResources, 0, NewResources);
+	Price = FMath::Clamp<int32>(NewLocalPriceHouse, 0, NewLocalPriceHouse);
+}
+
 void AMainLevelLogic::Tick(float DeltaSeconds)
 {
-	if (theEnd)
+	if (bIsIheEnd)
 	{
 		return;
 	}
-	updateAvailableResource();
-	if (checkFail())
+	if (СheckFail())
 	{
 		UGameplayStatics::OpenLevel(GetWorld(), "EndGame");
 		return;
@@ -143,9 +142,10 @@ void AMainLevelLogic::Tick(float DeltaSeconds)
 		UWorld* world = GetWorld();
 		APlayerController* player = world->GetFirstPlayerController();
 		FHitResult HitResult;
-		bool bRes = player->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), false,
-		                                                     HitResult);
-		if (bRes)
+		bool bHitResult = player->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		                                                           false,
+		                                                           HitResult);
+		if (bHitResult)
 		{
 			FVector location = HitResult.Location;
 			bool bSphereRes = UKismetSystemLibrary::SphereTraceSingle(world, location, location, 40.0f,
@@ -175,26 +175,35 @@ void AMainLevelLogic::Tick(float DeltaSeconds)
 	}
 }
 
-int32 AMainLevelLogic::updateAvailableResource()
+int32 AMainLevelLogic::UpdateAvailableResources()
 {
-	int32 availableResource = 0;
-	for (int i = 0; i < houses.Num(); i++)
+	int32 LocalAvailableResources = StartCredit;
+	for (int i = 0; i < Houses.Num(); i++)
 	{
-		availableResource += houses[i]->GetResource();
+		LocalAvailableResources += Houses[i]->GetResource();
 	}
-	ui->setResources(availableResource);
-	return availableResource;
+	ui->SetResources(LocalAvailableResources);
+	if (HousePrice > LocalAvailableResources)
+	{
+		ui->DisableSpawnButton();
+	}
+	else
+	{
+		ui->EnableSpawnButton();
+	}
+	return LocalAvailableResources;
 }
 
-bool AMainLevelLogic::checkFail()
+bool AMainLevelLogic::СheckFail()
 {
-	if (housePrice > 0 && houses.Num() == 0)
+	int32 AvailableResources = UpdateAvailableResources();
+	if (HousePrice > AvailableResources && Houses.Num() == 0)
 	{
 		UWorld* world = GetWorld();
 		UWidgetLayoutLibrary::RemoveAllWidgets(world);
 
 		PrimaryActorTick.bCanEverTick = false;
-		theEnd = true;
+		bIsIheEnd = true;
 		return true;
 	}
 	return false;
@@ -203,5 +212,5 @@ bool AMainLevelLogic::checkFail()
 void AMainLevelLogic::RemoveMe(AHouseMeshActor* house)
 {
 	house->killDelegate.Unbind();
-	houses.Remove(house);
+	Houses.Remove(house);
 }

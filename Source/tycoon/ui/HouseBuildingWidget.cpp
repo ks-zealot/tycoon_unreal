@@ -3,7 +3,7 @@
 
 #include "HouseBuildingWidget.h"
 
-void UHouseBuildingWidget::set(int32 val)
+void UHouseBuildingWidget::Set(int32 val)
 {
 	 BuildingBar->SetPercent(val / 100.0f);
 }

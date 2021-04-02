@@ -18,6 +18,5 @@ class TYCOON_API UHouseSpawnButton : public UButton
 	public:
 	UFUNCTION()
 	void SpawnHouse();
-	UPROPERTY(EditAnywhere,  BlueprintReadWrite, Category="Tycoon")
-	TSubclassOf<class UUserWidget> CursorBlueprint;
+	
 };

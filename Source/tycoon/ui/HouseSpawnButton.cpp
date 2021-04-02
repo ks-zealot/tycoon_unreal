@@ -15,8 +15,5 @@ UHouseSpawnButton::UHouseSpawnButton()
 
 void UHouseSpawnButton::SpawnHouse()
 {
-	GetOwningPlayer()->SetMouseCursorWidget(EMouseCursor::Default, CreateWidget<UUserWidget>(this->GetParent(),
-		                                        CursorBlueprint));
-	AtycoonGameModeBase* tycoonMode = Cast< AtycoonGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	Cast<AMainLevelLogic>(GetWorld()->GetLevelScriptActor())->bAboutToSpawnHouse = true;
+	Cast<AMainLevelLogic>(GetWorld()->GetLevelScriptActor())->NotifyAboutSpawnHouse() ;
 }

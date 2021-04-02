@@ -3,10 +3,28 @@
 
 #include "MainUI.h"
 
-void UMainUI::setResources(int32 val)
+void UMainUI::SetResources(int32 val)
 {
-	if (resources)
+	if (Resources)
 	{
-		resources->SetText(FText::AsNumber(val));
+		Resources->SetText(FText::AsNumber(val));
 	}
+}
+
+void UMainUI::SetHousePrice(int32 val)
+{
+	if (HousePrice)
+	{
+		HousePrice->SetText(FText::AsNumber(val));
+	}
+}
+
+void UMainUI::DisableSpawnButton()
+{
+	 HouseSpawnButton->SetIsEnabled(false);
+}
+
+void UMainUI::EnableSpawnButton()
+{
+	HouseSpawnButton->SetIsEnabled(true);
 }

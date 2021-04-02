@@ -23,9 +23,10 @@ public:
 		Category="Math|Trig")
 	static FVector2D GetRandomPointCircle(float radius);
 	UFUNCTION(BlueprintPure, meta=(DisplayName = "Random point on circle", CompactNodeTitle = "Random Point On Circle"),
-        Category="Math|Trig")
+		Category="Math|Trig")
 	static FVector2D GetRandomPointOnCircle(FVector2D origin, float radius);
-	UFUNCTION(BlueprintPure, meta=(DisplayName = "Random point in circle", CompactNodeTitle = "Random Point On Circle with origin 0.0"),
-        Category="Math|Trig")
-	static FVector2D GetRandomPointCircleWithMinMax ( float min, float max);
+	UFUNCTION(BlueprintPure,
+		meta=(DisplayName = "Random point in circle", CompactNodeTitle = "Random Point On Circle with origin 0.0"),
+		Category="Math|Trig")
+	static FVector2D GetRandomPointCircleWithMinMax(float min, float max);
 };

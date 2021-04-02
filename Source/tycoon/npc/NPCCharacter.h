@@ -12,12 +12,13 @@ class TYCOON_API ANPCCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ANPCCharacter();
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Tycoon")
 	FVector2D startPoint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	float RanfomDestinationRadius = 100.0;
+
+	
 	UFUNCTION(BlueprintCallable)
 	FVector GetRandomDestination();
 protected:

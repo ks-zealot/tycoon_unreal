@@ -37,7 +37,7 @@ FVector2D UUtilLib::GetRandomPointCircleWithMinMax(float min, float max)
 {
 	float angle = UKismetMathLibrary::RandomFloatInRange(0.0, 2 * UKismetMathLibrary::GetPI());
 	FVector2D randomDirection = FVector2D(UKismetMathLibrary::Cos(angle),
-                                          UKismetMathLibrary::Sin(angle));
+	                                      UKismetMathLibrary::Sin(angle));
 	randomDirection.Normalize();
 	const float randomDistance = UKismetMathLibrary::RandomFloatInRange(min, max);
 	return randomDirection * randomDistance;

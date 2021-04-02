@@ -30,42 +30,59 @@ public:
 protected:
 	virtual void BeginPlay() override;
 private:
-
-	bool bCanBuild = true;
-	bool bFlip = false;
-	void createUI(APlayerController* player);
-	void RecreateUI();
-	void SpawnHouse();
-	void generateRocks();
-
-	UMainUI* ui;
-	TArray<AHouseMeshActor*> houses;
-	int32 housePrice = 0;
-	int32 updateAvailableResource();
-	bool checkFail();
-	bool theEnd = false;
 	UFUNCTION()
 	void RemoveMe(AHouseMeshActor* house);
+	void CreateUI(APlayerController* player);
+	void RecreateUI();
+	void SpawnHouse();
+	void GenerateRocks();
+	void Calculate(int32& Res,int32& Price);
+	bool СheckFail();
+	int32 UpdateAvailableResources();
+
+	//UI
+	UMainUI* ui;
+	ULoadingScreenUI* LoadingWidget;
+
+	//bool switches
+	bool bCanBuild = true;
+	bool bFlip = false;
+	bool bIsIheEnd = false;
+
+	//houses
+	TArray<AHouseMeshActor*> Houses;
+	//current house price
+	int32 HousePrice = 100;
+	//handler for timer
 	FTimerHandle RockTimerHandle;
-	ULoadingScreenUI* loadingWidget;
+
 public:
+	//widget BPs
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TSubclassOf<class UUserWidget> MainUI;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
-	TSubclassOf<class AHouseMeshActor> MyHouseBlueprint;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
-	TSubclassOf<class AStaticMeshActor> RockBluerint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TSubclassOf<class UUserWidget> CursorBlockingBlueprint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TSubclassOf<class UUserWidget> CursorBlueprint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TSubclassOf<class UUserWidget> LoadingScreenWidget;
+
+	//mesh BPs
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
+	TSubclassOf<class AHouseMeshActor> MyHouseBlueprint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
+	TSubclassOf<class AStaticMeshActor> RockBluerint;
+
+	//properties
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	int32 NumberOfRocks = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
+	int32 StartCredit = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	float MinRockGenRadius = 100.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	int32 MaxRockGenRadius = 100000.0;
+
 	virtual void Tick(float DeltaSeconds) override;
+	void NotifyAboutSpawnHouse();
 };

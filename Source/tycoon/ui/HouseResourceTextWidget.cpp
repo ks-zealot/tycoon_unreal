@@ -3,11 +3,14 @@
 
 #include "HouseResourceTextWidget.h"
 
+#include "Kismet/KismetMathLibrary.h"
 
- 
 
-void UHouseResourceTextWidget::set(int32 val, float maxVal)
+void UHouseResourceTextWidget::Set(int32 val, float maxVal)
 {
-	text->SetText(FText::AsNumber(val));
+	Text->SetText(FText::FromString(FString::FromInt(val).Append("/").Append(FString::FromInt(maxVal))));
+	float percentToKill = val / maxVal;
+	Text->SetColorAndOpacity(
+		FSlateColor(UKismetMathLibrary::LinearColorLerp(FLinearColor::White, FLinearColor::Red, percentToKill)));
 	ResourceBar->SetPercent(val / maxVal);
 }

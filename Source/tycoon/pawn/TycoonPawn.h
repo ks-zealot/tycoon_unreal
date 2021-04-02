@@ -24,6 +24,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	float VerticalCameraSpeed = 1000.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")

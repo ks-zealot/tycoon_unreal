@@ -16,7 +16,7 @@
 /**
  * 
  */
-DECLARE_DELEGATE_OneParam(FKillDelegate, AHouseMeshActor* );
+DECLARE_DELEGATE_OneParam(FKillDelegate, AHouseMeshActor*);
 UCLASS()
 class TYCOON_API AHouseMeshActor : public AStaticMeshActor
 {
@@ -24,29 +24,39 @@ class TYCOON_API AHouseMeshActor : public AStaticMeshActor
 	AHouseMeshActor();
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tycoon")
-	USpringArmComponent* springArm;
+	USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tycoon")
-	UWidgetComponent* resourceWidget;
+	UWidgetComponent* ResourceWidget;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Tycoon")
-	UWidgetComponent* notCompleteResourceWidget;
+	UWidgetComponent* NotCompleteResourceWidget;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Tycoon")
-	TArray<ANPCCharacter*> npcs;
+	TArray<ANPCCharacter*> NPCs;
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "BaseCharacter")
 	void KillMe();
+
+
 	int32 GetResource();
 	void SetResource(int32 val);
-	int32 myIndex;
+	int32 MyIndex;
 	FKillDelegate killDelegate;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TSubclassOf<class AActor> NPCBlueprint;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	UStaticMesh* NotCompleteHouse;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	UStaticMesh* CompleteHouse;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	TSubclassOf<class UUserWidget> NotCompleteWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
-	TSubclassOf<class UUserWidget>  CompleteWidget;
+	TSubclassOf<class UUserWidget> CompleteWidget;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	int32 IncomePerSecond = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
@@ -57,13 +67,17 @@ public:
 	float SpawnNpcMinRadius = 70;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Tycoon")
 	float SpawnNpcMaxRadius = 100;
+
 protected:
 	virtual void BeginPlay() override;
+
 private:
 	float BuildingTime = 0.0;
-	int32 resource = 0;
+	int32 Resource = 0;
+	FTimerHandle UpdateResourcesTimerHandle;
+	bool bNotCompleted = true;
+
+
 	void SpawnNpc();
 	void UpdateResources();
-	bool bNotCompleted = true;
-	FTimerHandle UpdateResourcesTimerHandle;
 };

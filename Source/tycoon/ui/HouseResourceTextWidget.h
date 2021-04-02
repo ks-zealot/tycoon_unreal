@@ -16,13 +16,13 @@ UCLASS()
 class TYCOON_API UHouseResourceTextWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	private:
+private:
 	int32 value = 0;
-	public:
-	void set(int32 val, float maxVal);
+public:
+	void Set(int32 val, float maxVal);
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* text;
+	UTextBlock* Text;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* ResourceBar;
- 
 };

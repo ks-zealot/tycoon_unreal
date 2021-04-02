@@ -18,5 +18,5 @@ class TYCOON_API ULoadingScreenUI : public UUserWidget
 
 	public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UProgressBar* progress;
+	UProgressBar* ProgressBar;
 };

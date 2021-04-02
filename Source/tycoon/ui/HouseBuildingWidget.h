@@ -18,5 +18,7 @@ class TYCOON_API UHouseBuildingWidget : public UUserWidget
 	public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* BuildingBar;
-	void set(int32 val);
+	
+	
+	void Set(int32 val);
 };

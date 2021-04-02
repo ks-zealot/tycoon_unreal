@@ -13,25 +13,25 @@
 AHouseMeshActor::AHouseMeshActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("springArm"));
-	resourceWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ResourceWidget"));
-	notCompleteResourceWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("BuildingWidget"));
-	notCompleteResourceWidget->SetVisibility(true);
-	springArm->SetupAttachment(RootComponent);
-	resourceWidget->SetupAttachment(springArm);
-	notCompleteResourceWidget->SetupAttachment(springArm);
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("springArm"));
+	ResourceWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ResourceWidget"));
+	NotCompleteResourceWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("BuildingWidget"));
+	NotCompleteResourceWidget->SetVisibility(true);
+	SpringArm->SetupAttachment(RootComponent);
+	ResourceWidget->SetupAttachment(SpringArm);
+	NotCompleteResourceWidget->SetupAttachment(SpringArm);
 }
 
 void AHouseMeshActor::BeginPlay()
 {
 	Super::BeginPlay();
-	resourceWidget->SetVisibility(false);
+	ResourceWidget->SetVisibility(false);
 	GetStaticMeshComponent()->SetStaticMesh(NotCompleteHouse);
-	UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(resourceWidget->GetUserWidgetObject());
-	widgetPtr->set(0, static_cast<float>(KillResourcesValue));
-	GetWorld()->GetTimerManager().SetTimer(UpdateResourcesTimerHandle, this, &AHouseMeshActor::UpdateResources, 1.0, true);
+	UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(ResourceWidget->GetUserWidgetObject());
+	widgetPtr->Set(0, static_cast<float>(KillResourcesValue));
+	GetWorld()->GetTimerManager().SetTimer(UpdateResourcesTimerHandle, this, &AHouseMeshActor::UpdateResources, 1.0,
+	                                       true);
 }
-
 
 
 void AHouseMeshActor::UpdateResources()
@@ -40,26 +40,26 @@ void AHouseMeshActor::UpdateResources()
 	{
 		BuildingTime += 1.0;
 		UHouseBuildingWidget* widgetPtr = Cast<UHouseBuildingWidget>(
-            notCompleteResourceWidget->GetUserWidgetObject());
-		widgetPtr->set(BuildingTime * 20);
+			NotCompleteResourceWidget->GetUserWidgetObject());
+		widgetPtr->Set(BuildingTime * 20);
 		if (BuildingTime == 5.0)
 		{
 			bNotCompleted = false;
-			notCompleteResourceWidget->SetVisibility(false);
-			resourceWidget->SetVisibility(true);
+			NotCompleteResourceWidget->SetVisibility(false);
+			ResourceWidget->SetVisibility(true);
 			GetStaticMeshComponent()->SetStaticMesh(CompleteHouse);
 		}
 	}
 	else
 	{
-		resource += IncomePerSecond;
-		if (resource % SpawnNpcResourcesValue == 0)
+		Resource += IncomePerSecond;
+		if (Resource % SpawnNpcResourcesValue == 0)
 		{
 			SpawnNpc();
 		}
-		UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(resourceWidget->GetUserWidgetObject());
-		widgetPtr->set(resource, static_cast<float>(KillResourcesValue));
-		if (resource == KillResourcesValue)
+		UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(ResourceWidget->GetUserWidgetObject());
+		widgetPtr->Set(Resource, static_cast<float>(KillResourcesValue));
+		if (Resource == KillResourcesValue)
 		{
 			killDelegate.ExecuteIfBound(this);
 			KillMe();
@@ -72,7 +72,8 @@ void AHouseMeshActor::SpawnNpc()
 	FVector location = GetActorLocation();
 	FVector2D random = UUtilLib::GetRandomPointTwoCircles(UKismetMathLibrary::Conv_VectorToVector2D(location),
 	                                                      SpawnNpcMinRadius, SpawnNpcMaxRadius);
-	FTransform transform = UKismetMathLibrary::MakeTransform(FVector(random, 30), FRotator::ZeroRotator, FVector::OneVector);
+	FTransform transform = UKismetMathLibrary::MakeTransform(FVector(random, 30), FRotator::ZeroRotator,
+	                                                         FVector::OneVector);
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride =
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
@@ -81,19 +82,19 @@ void AHouseMeshActor::SpawnNpc()
 	{
 		npc->GetMesh()->SetCollisionProfileName(FName("CharacterMesh"), false);
 		npc->startPoint = UKismetMathLibrary::Conv_VectorToVector2D(GetActorLocation());
-		npcs.Add(npc);
+		NPCs.Add(npc);
 	}
 }
 
 
 int32 AHouseMeshActor::GetResource()
 {
-	return resource;
+	return Resource;
 }
 
 void AHouseMeshActor::SetResource(int32 val)
 {
-	resource = val;
-	UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(resourceWidget->GetUserWidgetObject());
-	widgetPtr->set(resource, static_cast<float>(KillResourcesValue));
+	Resource = val;
+	UHouseResourceTextWidget* widgetPtr = Cast<UHouseResourceTextWidget>(ResourceWidget->GetUserWidgetObject());
+	widgetPtr->Set(Resource, static_cast<float>(KillResourcesValue));
 }
