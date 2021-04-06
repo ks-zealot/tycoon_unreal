@@ -1,6 +1,5 @@
 .idea/
 .vs/
-Binaries/
 Config/
 Intermediate/
 Intermediate_bkp/
@@ -19,3 +18,4 @@ tycoon.sln
 tycoon.sln.DotSettings.user
 build/
 tycoon.rar
+bkp/
